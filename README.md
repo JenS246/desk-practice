@@ -35,6 +35,7 @@ The content test confirms the passage count, unique identifiers, 60-180 word ran
 
 - `index.html`: semantic desk and document structure
 - `styles.css`: responsive desk scene, paper surfaces, focus states, and reduced-motion support
+- `favicon.svg`: simple paper-file browser icon
 - `passages.js`: local passage bank
 - `app.js`: deck randomization, typing behavior, and results
 - `tests/content.test.js`: passage validation
