@@ -6,11 +6,12 @@ Desk Practice is a quiet, document-first typing game for paralegal students in a
 
 - Selects randomly from 67 locally stored passages.
 - Cycles through the full passage bank before repeating a document when browser storage is available.
-- Marks the current source character and shows incorrect typed characters with color plus an underline.
-- Allows normal backspacing and correction at any point.
+- Marks the source position while the student's text remains in one real, visible textarea.
+- Allows native caret placement, selection, arrow keys, Backspace, Delete, and correction at any point.
 - Provides Pause, Resume, Restart, and New document controls without leaving the desk.
 - Excludes paused and confirmation time from elapsed typing time.
 - Completes when aligned typing reaches the end of the source, without requiring mistakes to be corrected.
+- Keeps the completed attempt and results visible until Next document or Try again is deliberately clicked or tapped.
 - Calculates five-character words per minute, alignment-based final accuracy, and unresolved insertions, deletions, and substitutions.
 - Reflows the active game into a full-width paper stack on phones, with no decorative folder footprint, 16px minimum input text, 44px controls, natural page scrolling, and keyboard-height source access.
 - Uses no backend, account, analytics, or third-party runtime dependency.
@@ -33,7 +34,7 @@ Open `http://localhost:4173`.
 npm test
 ```
 
-The test suite confirms the passage bank, interface requirements, and eleven gameplay, scoring, pause, restart, confirmation, retry, and next-document sequences.
+The test suite confirms the passage bank, interface requirements, and twelve gameplay, scoring, persistent-result, pause, restart, confirmation, retry, and next-document sequences.
 
 ## Files
 

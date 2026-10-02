@@ -121,4 +121,16 @@ assert.equal(hasReachedEnd(source, extraText), true);
 assert.equal(hasReachedEnd(source, source.slice(0, -1) + "x"), true);
 assert.equal(formatTime(94000), "1:34");
 
-console.log("Validated all eleven gameplay interaction sequences.");
+// 12. A completed attempt remains frozen until an explicit new attempt begins.
+now = 0;
+attempt.begin(first);
+typeThrough(first.text);
+const completedValue = attempt.value;
+const completedMetrics = attempt.metrics();
+now = 60000;
+assert.equal(attempt.updateValue(`${completedValue} `), false);
+assert.equal(attempt.phase, "complete");
+assert.equal(attempt.value, completedValue);
+assert.deepEqual(attempt.metrics(), completedMetrics);
+
+console.log("Validated all twelve gameplay interaction sequences.");

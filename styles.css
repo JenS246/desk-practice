@@ -19,7 +19,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { min-width: 320px; min-height: 100%; overflow-x: hidden; }
+html, body { min-width: 0; min-height: 100%; overflow-x: hidden; }
 body { margin: 0; min-height: 100dvh; background: var(--desk); color: var(--ink); }
 button, textarea { font: inherit; }
 button { cursor: pointer; }
@@ -113,7 +113,7 @@ button { cursor: pointer; }
 }
 .start-button:hover, .result-actions button:hover { background: var(--navy-dark); }
 .start-button:active, .result-actions button:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--navy-dark); }
-button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focus); outline-offset: 4px; }
+button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focus); outline-offset: 4px; }
 
 .legal-pad {
   position: fixed;
@@ -169,14 +169,25 @@ button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outli
 
 .typing-sheet { min-height: 250px; margin-top: -8px; transform: rotate(-0.38deg); }
 .typing-sheet label { display: block; color: var(--navy); font-size: 0.78rem; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
-.typing-field { position: relative; }
-.typed-page { min-height: 116px; margin-top: 20px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.02rem, 1.45vw, 1.16rem); line-height: 1.64; white-space: pre-wrap; overflow-wrap: anywhere; }
-.typed-page .correct { color: var(--ink); }
-.typed-page .wrong { color: var(--red); background: var(--error-bg); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
-.source-text .source-error { color: var(--red); background: var(--error-bg); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
-.caret { display: inline-block; width: 2px; height: 1.2em; margin-left: 1px; vertical-align: -0.18em; background: var(--navy); }
-.typing-field textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; opacity: 0; resize: none; cursor: text; caret-color: transparent; font-size: 16px; line-height: 1.5; }
-.typing-sheet.is-paused .caret { visibility: hidden; }
+.typing-field textarea {
+  display: block;
+  width: 100%;
+  min-height: 116px;
+  margin-top: 20px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--navy);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(16px, 1.45vw, 1.16rem);
+  line-height: 1.64;
+  resize: none;
+}
+.typing-field textarea:disabled { opacity: 1; color: var(--ink); -webkit-text-fill-color: var(--ink); }
 
 .attempt-controls {
   min-height: 48px;
@@ -278,9 +289,9 @@ button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outli
   .typing-sheet { min-height: 224px; margin-top: -1px; }
   .document-heading { display: block; }
   .document-heading h1 { margin-top: 10px; }
-  .source-text, .typed-page { font-size: 1.0625rem; line-height: 1.55; }
+  .source-text, .typing-field textarea { font-size: 1.0625rem; line-height: 1.55; }
   .source-text { margin-top: 18px; }
-  .typed-page { min-height: 96px; margin-top: 16px; }
+  .typing-field textarea { min-height: 96px; margin-top: 16px; }
   .attempt-controls { display: block; margin-top: 12px; padding-top: 10px; }
   .attempt-controls p { min-height: 32px; display: flex; align-items: center; }
   .attempt-controls div { display: flex; justify-content: space-between; gap: 4px 14px; }
@@ -320,7 +331,7 @@ button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outli
   .paper-stack { max-height: calc(100dvh - 36px); }
   .source-sheet, .typing-sheet { padding-top: 22px; padding-bottom: 22px; }
   .source-text { margin-top: 17px; line-height: 1.5; }
-  .typed-page { min-height: 86px; margin-top: 14px; line-height: 1.5; }
+  .typing-field textarea { min-height: 86px; margin-top: 14px; line-height: 1.5; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -328,5 +339,5 @@ button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outli
 }
 
 @media (forced-colors: active) {
-  .current-char, .typed-page .wrong { forced-color-adjust: none; color: CanvasText; background: Highlight; }
+  .current-char { forced-color-adjust: none; color: CanvasText; background: Highlight; }
 }

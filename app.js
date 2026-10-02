@@ -9,7 +9,6 @@
   const practice = document.querySelector('[data-screen="practice"]');
   const input = document.querySelector("[data-input]");
   const sourceText = document.querySelector("[data-source-text]");
-  const typedPage = document.querySelector("[data-typed-page]");
   const documentType = document.querySelector("[data-document-type]");
   const sourceLine = document.querySelector("[data-source]");
   const results = document.querySelector("[data-results]");
@@ -49,34 +48,21 @@
     return span;
   }
 
-  function renderComparison(value) {
+  function renderSourceProgress(value) {
     const operations = alignText(current.text, value, attempt.phase === "complete");
-    const sourceErrors = new Set(
-      operations
-        .filter((operation) =>
-          operation.type === "replace" ||
-          (operation.type === "delete" && (operation.typedIndex < value.length || attempt.phase === "complete"))
-        )
-        .map((operation) => operation.sourceIndex)
-    );
     const cursorPosition = input.selectionStart ?? value.length;
     const currentSourcePosition = sourcePositionForTypedPosition(operations, cursorPosition);
 
     sourceText.replaceChildren();
     [...current.text].forEach((character, index) => {
-      const classes = [];
-      if (sourceErrors.has(index)) classes.push("source-error");
-      if (index === currentSourcePosition && attempt.phase !== "complete") classes.push("current-char");
-      sourceText.append(makeSpan(character, classes.join(" ")));
+      const className = index === currentSourcePosition && attempt.phase !== "complete" ? "current-char" : "";
+      sourceText.append(makeSpan(character, className));
     });
+  }
 
-    typedPage.replaceChildren();
-    operations.forEach((operation) => {
-      if (operation.type === "delete") return;
-      if (attempt.phase !== "complete" && operation.typedIndex === cursorPosition) typedPage.append(makeSpan("", "caret"));
-      typedPage.append(makeSpan(operation.typedCharacter, operation.type === "equal" ? "correct" : "wrong"));
-    });
-    if (attempt.phase !== "complete" && cursorPosition === value.length) typedPage.append(makeSpan("", "caret"));
+  function resizeInput() {
+    input.style.height = "auto";
+    input.style.height = `${input.scrollHeight}px`;
   }
 
   function updateTime() {
@@ -117,7 +103,8 @@
     practice.classList.remove("is-complete");
     paperStack.scrollTop = 0;
     status.textContent = "Document ready.";
-    renderComparison("");
+    renderSourceProgress("");
+    resizeInput();
     syncPhase();
     focusInput();
   }
@@ -145,11 +132,15 @@
       resultSource.hidden = false;
     }
 
-    renderComparison(attempt.value);
+    renderSourceProgress(attempt.value);
     results.hidden = false;
     practice.classList.add("is-complete");
+    input.blur();
     syncPhase();
-    document.querySelector("[data-next]").focus();
+    if (window.matchMedia("(max-width: 780px)").matches) {
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      requestAnimationFrame(() => results.scrollIntoView({ behavior, block: "nearest" }));
+    }
   }
 
   input.addEventListener("beforeinput", (event) => {
@@ -161,14 +152,15 @@
   input.addEventListener("input", () => {
     if (attempt.phase !== "active") return;
     const finished = attempt.updateValue(input.value);
-    renderComparison(attempt.value);
+    resizeInput();
+    renderSourceProgress(attempt.value);
     if (finished) finish();
   });
 
   input.addEventListener("paste", (event) => event.preventDefault());
-  typingSheet.addEventListener("click", (event) => {
-    if (attempt.phase === "active" && !event.target.closest("button")) input.focus();
-  });
+  input.addEventListener("click", () => renderSourceProgress(input.value));
+  input.addEventListener("keyup", () => renderSourceProgress(input.value));
+  input.addEventListener("select", () => renderSourceProgress(input.value));
 
   document.querySelector("[data-start]").addEventListener("click", () => {
     home.hidden = true;
