@@ -1,6 +1,6 @@
 # Desk Practice
 
-Desk Practice is a quiet, document-first typing game for paralegal students in a Legal Internship course. It places a short legal-office document on a modest desk, gives the student a second sheet for typing, and reports words per minute, accuracy, corrections, and elapsed time when the document is complete.
+Desk Practice is a quiet, document-first typing game for paralegal students in a Legal Internship course. It places a short legal-office document on a modest desk, gives the student a second sheet for typing, and reports words per minute, alignment-based accuracy, final errors, and elapsed time when the document is complete.
 
 ## How it works
 
@@ -10,7 +10,8 @@ Desk Practice is a quiet, document-first typing game for paralegal students in a
 - Allows normal backspacing and correction at any point.
 - Provides Pause, Resume, Restart, and New document controls without leaving the desk.
 - Excludes paused and confirmation time from elapsed typing time.
-- Calculates standard five-character words per minute, behavior-based keystroke accuracy, and corrections.
+- Completes when aligned typing reaches the end of the source, without requiring mistakes to be corrected.
+- Calculates five-character words per minute, alignment-based final accuracy, and unresolved insertions, deletions, and substitutions.
 - Reflows the active game into a full-width paper stack on phones, with no decorative folder footprint, 16px minimum input text, 44px controls, natural page scrolling, and keyboard-height source access.
 - Uses no backend, account, analytics, or third-party runtime dependency.
 
@@ -32,7 +33,7 @@ Open `http://localhost:4173`.
 npm test
 ```
 
-The test suite confirms the passage bank, interface requirements, and all seven typing, pause, restart, confirmation, retry, and next-document sequences.
+The test suite confirms the passage bank, interface requirements, and eleven gameplay, scoring, pause, restart, confirmation, retry, and next-document sequences.
 
 ## Files
 
@@ -40,7 +41,7 @@ The test suite confirms the passage bank, interface requirements, and all seven 
 - `styles.css`: responsive desk scene, paper surfaces, focus states, and reduced-motion support
 - `favicon.svg`: simple paper-file browser icon
 - `passages.js`: local passage bank
-- `typing-engine.js`: timer, correction scoring, attempt state, and non-repeating deck logic
+- `typing-engine.js`: timer, alignment scoring, attempt state, and non-repeating deck logic
 - `app.js`: desk rendering, keyboard input, controls, and results
 - `tests/content.test.js`: passage validation
 - `tests/interactions.test.js`: required interaction-sequence coverage

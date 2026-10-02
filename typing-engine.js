@@ -42,7 +42,7 @@
     return `${minutes}:${seconds}`;
   }
 
-  function alignText(source, typed) {
+  function compareText(source, typed, requireSourceEnd = false) {
     const sourceLength = source.length;
     const typedLength = typed.length;
     const distances = Array.from({ length: sourceLength + 1 }, () => new Uint16Array(typedLength + 1));
@@ -60,15 +60,19 @@
     }
 
     const operations = [];
-    let sourceIndex = 0;
-    let bestDistance = distances[0][typedLength];
-    for (let candidate = 1; candidate <= sourceLength; candidate += 1) {
-      if (distances[candidate][typedLength] <= bestDistance) {
-        sourceIndex = candidate;
-        bestDistance = distances[candidate][typedLength];
+    let sourceIndex = sourceLength;
+    if (!requireSourceEnd) {
+      let bestDistance = distances[0][typedLength];
+      sourceIndex = 0;
+      for (let candidate = 1; candidate <= sourceLength; candidate += 1) {
+        if (distances[candidate][typedLength] <= bestDistance) {
+          sourceIndex = candidate;
+          bestDistance = distances[candidate][typedLength];
+        }
       }
     }
     const alignedSourceEnd = sourceIndex;
+    const editDistance = distances[alignedSourceEnd][typedLength];
     let typedIndex = typedLength;
 
     while (sourceIndex > 0 || typedIndex > 0) {
@@ -113,11 +117,18 @@
         typedIndex: typedLength
       });
     }
-    return operations;
+    return { alignedSourceEnd, editDistance, operations };
   }
 
-  function shouldPromptCorrection(source, typed) {
-    return typed !== source && typed.length >= Math.max(1, source.length - 1);
+  function alignText(source, typed, requireSourceEnd = false) {
+    return compareText(source, typed, requireSourceEnd).operations;
+  }
+
+  function hasReachedEnd(source, typed) {
+    if (!typed.length) return false;
+    const comparison = compareText(source, typed);
+    const insertionAllowance = Math.min(5, Math.max(1, Math.ceil(source.length * 0.02)));
+    return comparison.alignedSourceEnd === source.length || typed.length >= source.length + insertionAllowance;
   }
 
   function sourcePositionForTypedPosition(operations, typedPosition) {
@@ -146,37 +157,18 @@
       this.timerStarted = false;
       this.activeStartedAt = null;
       this.elapsedBeforePeriod = 0;
-      this.correctEntries = 0;
-      this.corrections = 0;
       this.value = "";
     }
 
-    recordInsertion(text, position, selectionEnd = position) {
+    recordInsertion(text) {
       if (this.phase !== "active" || !text) return;
       this.startClock();
-      let provisionalValue = this.value.slice(0, position) + this.value.slice(selectionEnd);
-      let insertionPosition = position;
-
-      [...text].forEach((character) => {
-        const operations = alignText(this.passage.text, provisionalValue);
-        let sourcePosition = sourcePositionForTypedPosition(operations, insertionPosition);
-        const previousOperation = [...operations]
-          .reverse()
-          .find((operation) => operation.type !== "delete" && operation.typedIndex === insertionPosition - 1);
-        if (previousOperation?.type === "replace" && character === previousOperation.sourceCharacter) {
-          sourcePosition = previousOperation.sourceIndex;
-        }
-        if (character === this.passage.text[sourcePosition]) this.correctEntries += 1;
-        else this.corrections += 1;
-        provisionalValue = provisionalValue.slice(0, insertionPosition) + character + provisionalValue.slice(insertionPosition);
-        insertionPosition += 1;
-      });
     }
 
     updateValue(value) {
       if (this.phase !== "active") return false;
       this.value = value;
-      if (this.value === this.passage.text) {
+      if (hasReachedEnd(this.passage.text, this.value)) {
         this.stopClock();
         this.phase = "complete";
         return true;
@@ -227,14 +219,18 @@
     }
 
     metrics() {
-      const relevantEntries = this.correctEntries + this.corrections;
-      const accuracy = relevantEntries ? Math.round((this.correctEntries / relevantEntries) * 100) : 100;
+      const comparison = compareText(this.passage.text, this.value, true);
+      const errors = comparison.editDistance;
+      const accuracy = this.passage.text.length
+        ? Math.max(0, Math.round((1 - errors / this.passage.text.length) * 100))
+        : 100;
       const elapsed = this.elapsedMs();
       const elapsedMinutes = Math.max(elapsed, 1000) / 60000;
-      const wpm = Math.round((this.passage.text.length / 5) / elapsedMinutes);
-      return { wpm, accuracy, corrections: this.corrections, elapsed };
+      const acceptedCharacters = Math.min(this.value.length, this.passage.text.length);
+      const wpm = Math.round((acceptedCharacters / 5) / elapsedMinutes);
+      return { wpm, accuracy, errors, elapsed };
     }
   }
 
-  return { Attempt, alignText, drawFromDeck, formatTime, shouldPromptCorrection, sourcePositionForTypedPosition };
+  return { Attempt, alignText, compareText, drawFromDeck, formatTime, hasReachedEnd, sourcePositionForTypedPosition };
 });

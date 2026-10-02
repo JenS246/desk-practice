@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "desk-practice-deck-v1";
-  const { Attempt, alignText, drawFromDeck, formatTime, shouldPromptCorrection, sourcePositionForTypedPosition } = DeskTyping;
+  const { Attempt, alignText, drawFromDeck, formatTime, sourcePositionForTypedPosition } = DeskTyping;
   const attempt = new Attempt();
 
   const home = document.querySelector('[data-screen="home"]');
@@ -19,7 +19,6 @@
   const attemptControls = document.querySelector("[data-attempt-controls]");
   const pauseNotice = document.querySelector("[data-pause-notice]");
   const confirmNotice = document.querySelector("[data-confirm]");
-  const correctionNotice = document.querySelector("[data-correction-notice]");
   const pauseButton = document.querySelector("[data-pause]");
   const status = document.querySelector("[data-status]");
   const timeDisplay = document.querySelector("[data-time]");
@@ -51,13 +50,12 @@
   }
 
   function renderComparison(value) {
-    const operations = alignText(current.text, value);
-    const nearUnresolvedEnd = shouldPromptCorrection(current.text, value);
+    const operations = alignText(current.text, value, attempt.phase === "complete");
     const sourceErrors = new Set(
       operations
         .filter((operation) =>
           operation.type === "replace" ||
-          (operation.type === "delete" && (operation.typedIndex < value.length || nearUnresolvedEnd))
+          (operation.type === "delete" && (operation.typedIndex < value.length || attempt.phase === "complete"))
         )
         .map((operation) => operation.sourceIndex)
     );
@@ -116,7 +114,6 @@
     results.hidden = true;
     resultSource.hidden = true;
     resultSource.replaceChildren();
-    correctionNotice.hidden = true;
     practice.classList.remove("is-complete");
     paperStack.scrollTop = 0;
     status.textContent = "Document ready.";
@@ -129,7 +126,7 @@
     const metrics = attempt.metrics();
     document.querySelector("[data-wpm]").textContent = String(metrics.wpm);
     document.querySelector("[data-accuracy]").textContent = `${metrics.accuracy}%`;
-    document.querySelector("[data-corrections]").textContent = String(metrics.corrections);
+    document.querySelector("[data-errors]").textContent = String(metrics.errors);
     document.querySelector("[data-result-time]").textContent = formatTime(metrics.elapsed);
     status.textContent = "Document complete.";
 
@@ -148,8 +145,7 @@
       resultSource.hidden = false;
     }
 
-    correctionNotice.hidden = true;
-    renderComparison(current.text);
+    renderComparison(attempt.value);
     results.hidden = false;
     practice.classList.add("is-complete");
     syncPhase();
@@ -159,14 +155,13 @@
   input.addEventListener("beforeinput", (event) => {
     if (event.inputType.startsWith("delete")) return;
     const inserted = event.data ?? (event.inputType === "insertLineBreak" ? "\n" : "");
-    if (inserted) attempt.recordInsertion(inserted, input.selectionStart, input.selectionEnd);
+    if (inserted) attempt.recordInsertion(inserted);
   });
 
   input.addEventListener("input", () => {
     if (attempt.phase !== "active") return;
     const finished = attempt.updateValue(input.value);
     renderComparison(attempt.value);
-    correctionNotice.hidden = !shouldPromptCorrection(current.text, attempt.value);
     if (finished) finish();
   });
 
