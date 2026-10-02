@@ -15,6 +15,7 @@ const requirements = [
   [html.includes('data-resume'), "Resume control is missing."],
   [html.includes('data-corrections'), "Corrections result is missing."],
   [html.includes('data-result-time'), "Time result is missing."],
+  [html.includes("Correct the highlighted text to finish."), "End-of-passage correction guidance is missing."],
   [html.includes("<dt>WPM</dt>"), "The concise WPM result label is missing."],
   [!html.includes("Words per minute:"), "The long result label should not appear."],
   [html.includes('Begin typing below.'), "Typing instruction was not simplified."],
@@ -30,7 +31,9 @@ const requirements = [
   [app.includes("localStorage"), "Passage deck persistence is missing."],
   [app.includes('inputType.startsWith("delete")'), "Editable mistake handling is missing."],
   [engine.includes('phase = "paused"'), "Pause state is missing."],
-  [engine.includes("correctEntries / relevantEntries"), "Behavior-based accuracy is missing."]
+  [engine.includes("correctEntries / relevantEntries"), "Behavior-based accuracy is missing."],
+  [!engine.includes("value.slice(0, this.passage.text.length)"), "Typed input must not be truncated to passage length."],
+  [engine.includes("function alignText"), "Alignment-aware comparison is missing."]
 ];
 
 for (const [passes, message] of requirements) {

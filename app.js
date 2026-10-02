@@ -2,7 +2,7 @@
   "use strict";
 
   const STORAGE_KEY = "desk-practice-deck-v1";
-  const { Attempt, drawFromDeck, formatTime } = DeskTyping;
+  const { Attempt, alignText, drawFromDeck, formatTime, shouldPromptCorrection, sourcePositionForTypedPosition } = DeskTyping;
   const attempt = new Attempt();
 
   const home = document.querySelector('[data-screen="home"]');
@@ -19,6 +19,7 @@
   const attemptControls = document.querySelector("[data-attempt-controls]");
   const pauseNotice = document.querySelector("[data-pause-notice]");
   const confirmNotice = document.querySelector("[data-confirm]");
+  const correctionNotice = document.querySelector("[data-correction-notice]");
   const pauseButton = document.querySelector("[data-pause]");
   const status = document.querySelector("[data-status]");
   const timeDisplay = document.querySelector("[data-time]");
@@ -49,19 +50,35 @@
     return span;
   }
 
-  function renderSource(position) {
+  function renderComparison(value) {
+    const operations = alignText(current.text, value);
+    const nearUnresolvedEnd = shouldPromptCorrection(current.text, value);
+    const sourceErrors = new Set(
+      operations
+        .filter((operation) =>
+          operation.type === "replace" ||
+          (operation.type === "delete" && (operation.typedIndex < value.length || nearUnresolvedEnd))
+        )
+        .map((operation) => operation.sourceIndex)
+    );
+    const cursorPosition = input.selectionStart ?? value.length;
+    const currentSourcePosition = sourcePositionForTypedPosition(operations, cursorPosition);
+
     sourceText.replaceChildren();
     [...current.text].forEach((character, index) => {
-      sourceText.append(makeSpan(character, index === position && attempt.phase !== "complete" ? "current-char" : ""));
+      const classes = [];
+      if (sourceErrors.has(index)) classes.push("source-error");
+      if (index === currentSourcePosition && attempt.phase !== "complete") classes.push("current-char");
+      sourceText.append(makeSpan(character, classes.join(" ")));
     });
-  }
 
-  function renderTyped(value) {
     typedPage.replaceChildren();
-    [...value].forEach((character, index) => {
-      typedPage.append(makeSpan(character, character === current.text[index] ? "correct" : "wrong"));
+    operations.forEach((operation) => {
+      if (operation.type === "delete") return;
+      if (attempt.phase !== "complete" && operation.typedIndex === cursorPosition) typedPage.append(makeSpan("", "caret"));
+      typedPage.append(makeSpan(operation.typedCharacter, operation.type === "equal" ? "correct" : "wrong"));
     });
-    if (attempt.phase !== "complete") typedPage.append(makeSpan("", "caret"));
+    if (attempt.phase !== "complete" && cursorPosition === value.length) typedPage.append(makeSpan("", "caret"));
   }
 
   function updateTime() {
@@ -99,11 +116,11 @@
     results.hidden = true;
     resultSource.hidden = true;
     resultSource.replaceChildren();
+    correctionNotice.hidden = true;
     practice.classList.remove("is-complete");
     paperStack.scrollTop = 0;
     status.textContent = "Document ready.";
-    renderSource(0);
-    renderTyped("");
+    renderComparison("");
     syncPhase();
     focusInput();
   }
@@ -131,8 +148,8 @@
       resultSource.hidden = false;
     }
 
-    renderSource(current.text.length);
-    renderTyped(current.text);
+    correctionNotice.hidden = true;
+    renderComparison(current.text);
     results.hidden = false;
     practice.classList.add("is-complete");
     syncPhase();
@@ -142,15 +159,14 @@
   input.addEventListener("beforeinput", (event) => {
     if (event.inputType.startsWith("delete")) return;
     const inserted = event.data ?? (event.inputType === "insertLineBreak" ? "\n" : "");
-    if (inserted) attempt.recordInsertion(inserted, input.selectionStart);
+    if (inserted) attempt.recordInsertion(inserted, input.selectionStart, input.selectionEnd);
   });
 
   input.addEventListener("input", () => {
     if (attempt.phase !== "active") return;
     const finished = attempt.updateValue(input.value);
-    if (input.value !== attempt.value) input.value = attempt.value;
-    renderSource(attempt.value.length);
-    renderTyped(attempt.value);
+    renderComparison(attempt.value);
+    correctionNotice.hidden = !shouldPromptCorrection(current.text, attempt.value);
     if (finished) finish();
   });
 

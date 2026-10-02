@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { Attempt, drawFromDeck, formatTime } = require("../typing-engine.js");
+const { Attempt, alignText, drawFromDeck, formatTime, shouldPromptCorrection } = require("../typing-engine.js");
 
 let now = 0;
 const attempt = new Attempt(() => now);
@@ -81,4 +81,39 @@ const next = drawFromDeck([first, second], [second.id, first.id], second.id, () 
 assert.equal(next.id, first.id);
 assert.equal(formatTime(94000), "1:34");
 
-console.log("Validated all seven requested interaction sequences.");
+// 8. Extra input remains editable and exact equality after editing completes.
+attempt.begin(first);
+attempt.updateValue("abcdex");
+assert.equal(attempt.value, "abcdex");
+assert.equal(attempt.phase, "active");
+attempt.updateValue("abcde");
+assert.equal(attempt.phase, "complete");
+
+// 9. Alignment localizes missing, extra, and replaced characters.
+const source = "The court entered judgment.";
+const missing = alignText(source, "The cort entered judgment.").filter((operation) => operation.type !== "equal");
+const extra = alignText(source, "The courtt entered judgment.").filter((operation) => operation.type !== "equal");
+const replaced = alignText("abcde", "abcdx").filter((operation) => operation.type !== "equal");
+assert.deepEqual(missing.map((operation) => [operation.type, operation.sourceCharacter]), [["delete", "u"]]);
+assert.deepEqual(extra.map((operation) => [operation.type, operation.typedCharacter]), [["insert", "t"]]);
+assert.deepEqual(replaced.map((operation) => [operation.type, operation.sourceCharacter, operation.typedCharacter]), [["replace", "e", "x"]]);
+
+// 10. End guidance appears only near an unresolved ending.
+assert.equal(shouldPromptCorrection("abcde", "abcdx"), true);
+assert.equal(shouldPromptCorrection("abcde", "abcdef"), true);
+assert.equal(shouldPromptCorrection("abcde", "abc"), false);
+assert.equal(shouldPromptCorrection("abcde", "abcde"), false);
+
+// 11. One extra character does not make the aligned remainder count as mistakes.
+attempt.begin({ id: "alignment", text: source });
+for (const character of "The courtt entered judgment.") enter(character);
+assert.equal(attempt.corrections, 1);
+
+// 12. Inserting an omitted middle character completes as soon as equality is restored.
+attempt.begin({ id: "missing", text: source });
+attempt.updateValue("The cort entered judgment.");
+attempt.recordInsertion("u", 6);
+assert.equal(attempt.updateValue(source), true);
+assert.equal(attempt.phase, "complete");
+
+console.log("Validated all twelve requested interaction sequences.");

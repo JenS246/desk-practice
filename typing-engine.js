@@ -42,6 +42,97 @@
     return `${minutes}:${seconds}`;
   }
 
+  function alignText(source, typed) {
+    const sourceLength = source.length;
+    const typedLength = typed.length;
+    const distances = Array.from({ length: sourceLength + 1 }, () => new Uint16Array(typedLength + 1));
+
+    for (let sourceIndex = 0; sourceIndex <= sourceLength; sourceIndex += 1) distances[sourceIndex][0] = sourceIndex;
+    for (let typedIndex = 0; typedIndex <= typedLength; typedIndex += 1) distances[0][typedIndex] = typedIndex;
+
+    for (let sourceIndex = 1; sourceIndex <= sourceLength; sourceIndex += 1) {
+      for (let typedIndex = 1; typedIndex <= typedLength; typedIndex += 1) {
+        const substitution = distances[sourceIndex - 1][typedIndex - 1] + (source[sourceIndex - 1] === typed[typedIndex - 1] ? 0 : 1);
+        const insertion = distances[sourceIndex][typedIndex - 1] + 1;
+        const deletion = distances[sourceIndex - 1][typedIndex] + 1;
+        distances[sourceIndex][typedIndex] = Math.min(substitution, insertion, deletion);
+      }
+    }
+
+    const operations = [];
+    let sourceIndex = 0;
+    let bestDistance = distances[0][typedLength];
+    for (let candidate = 1; candidate <= sourceLength; candidate += 1) {
+      if (distances[candidate][typedLength] <= bestDistance) {
+        sourceIndex = candidate;
+        bestDistance = distances[candidate][typedLength];
+      }
+    }
+    const alignedSourceEnd = sourceIndex;
+    let typedIndex = typedLength;
+
+    while (sourceIndex > 0 || typedIndex > 0) {
+      const sourceCharacter = source[sourceIndex - 1];
+      const typedCharacter = typed[typedIndex - 1];
+
+      if (
+        sourceIndex > 0 &&
+        typedIndex > 0 &&
+        sourceCharacter === typedCharacter &&
+        distances[sourceIndex][typedIndex] === distances[sourceIndex - 1][typedIndex - 1]
+      ) {
+        operations.push({ type: "equal", sourceCharacter, typedCharacter, sourceIndex: sourceIndex - 1, typedIndex: typedIndex - 1 });
+        sourceIndex -= 1;
+        typedIndex -= 1;
+      } else if (
+        sourceIndex > 0 &&
+        typedIndex > 0 &&
+        distances[sourceIndex][typedIndex] === distances[sourceIndex - 1][typedIndex - 1] + 1
+      ) {
+        operations.push({ type: "replace", sourceCharacter, typedCharacter, sourceIndex: sourceIndex - 1, typedIndex: typedIndex - 1 });
+        sourceIndex -= 1;
+        typedIndex -= 1;
+      } else if (
+        typedIndex > 0 &&
+        distances[sourceIndex][typedIndex] === distances[sourceIndex][typedIndex - 1] + 1
+      ) {
+        operations.push({ type: "insert", typedCharacter, sourceIndex, typedIndex: typedIndex - 1 });
+        typedIndex -= 1;
+      } else {
+        operations.push({ type: "delete", sourceCharacter, sourceIndex: sourceIndex - 1, typedIndex });
+        sourceIndex -= 1;
+      }
+    }
+
+    operations.reverse();
+    for (let trailingIndex = alignedSourceEnd; trailingIndex < sourceLength; trailingIndex += 1) {
+      operations.push({
+        type: "delete",
+        sourceCharacter: source[trailingIndex],
+        sourceIndex: trailingIndex,
+        typedIndex: typedLength
+      });
+    }
+    return operations;
+  }
+
+  function shouldPromptCorrection(source, typed) {
+    return typed !== source && typed.length >= Math.max(1, source.length - 1);
+  }
+
+  function sourcePositionForTypedPosition(operations, typedPosition) {
+    let sourcePosition = 0;
+    let currentTypedPosition = 0;
+
+    for (const operation of operations) {
+      if (currentTypedPosition >= typedPosition) return sourcePosition;
+      if (operation.type !== "insert") sourcePosition += 1;
+      if (operation.type !== "delete") currentTypedPosition += 1;
+    }
+
+    return sourcePosition;
+  }
+
   class Attempt {
     constructor(now = () => performance.now()) {
       this.now = now;
@@ -60,18 +151,31 @@
       this.value = "";
     }
 
-    recordInsertion(text, position) {
+    recordInsertion(text, position, selectionEnd = position) {
       if (this.phase !== "active" || !text) return;
       this.startClock();
-      [...text].forEach((character, index) => {
-        if (character === this.passage.text[position + index]) this.correctEntries += 1;
+      let provisionalValue = this.value.slice(0, position) + this.value.slice(selectionEnd);
+      let insertionPosition = position;
+
+      [...text].forEach((character) => {
+        const operations = alignText(this.passage.text, provisionalValue);
+        let sourcePosition = sourcePositionForTypedPosition(operations, insertionPosition);
+        const previousOperation = [...operations]
+          .reverse()
+          .find((operation) => operation.type !== "delete" && operation.typedIndex === insertionPosition - 1);
+        if (previousOperation?.type === "replace" && character === previousOperation.sourceCharacter) {
+          sourcePosition = previousOperation.sourceIndex;
+        }
+        if (character === this.passage.text[sourcePosition]) this.correctEntries += 1;
         else this.corrections += 1;
+        provisionalValue = provisionalValue.slice(0, insertionPosition) + character + provisionalValue.slice(insertionPosition);
+        insertionPosition += 1;
       });
     }
 
     updateValue(value) {
       if (this.phase !== "active") return false;
-      this.value = value.slice(0, this.passage.text.length);
+      this.value = value;
       if (this.value === this.passage.text) {
         this.stopClock();
         this.phase = "complete";
@@ -132,5 +236,5 @@
     }
   }
 
-  return { Attempt, drawFromDeck, formatTime };
+  return { Attempt, alignText, drawFromDeck, formatTime, shouldPromptCorrection, sourcePositionForTypedPosition };
 });
