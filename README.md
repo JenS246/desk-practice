@@ -11,6 +11,7 @@ Desk Practice is a quiet, document-first typing game for paralegal students in a
 - Provides Pause, Resume, Restart, and New document controls without leaving the desk.
 - Excludes paused and confirmation time from elapsed typing time.
 - Calculates standard five-character words per minute, behavior-based keystroke accuracy, and corrections.
+- Reflows into a single paper stack on phones, with 16px minimum input text, 44px controls, natural page scrolling, and keyboard-height source access.
 - Uses no backend, account, analytics, or third-party runtime dependency.
 
 Passages are fictional classroom materials representing client notes, email drafts, letters, case summaries, procedural summaries, docket entries, research notes, and several common practice areas. The short court-opinion passages are original instructional text, not quotations from actual opinions.

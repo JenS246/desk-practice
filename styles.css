@@ -19,7 +19,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { min-width: 320px; min-height: 100%; }
+html, body { min-width: 320px; min-height: 100%; overflow-x: hidden; }
 body { margin: 0; min-height: 100dvh; background: var(--desk); color: var(--ink); }
 button, textarea { font: inherit; }
 button { cursor: pointer; }
@@ -174,7 +174,7 @@ button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outli
 .typed-page .correct { color: var(--ink); }
 .typed-page .wrong { color: var(--red); background: var(--error-bg); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
 .caret { display: inline-block; width: 2px; height: 1.2em; margin-left: 1px; vertical-align: -0.18em; background: var(--navy); }
-.typing-field textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; opacity: 0; resize: none; cursor: text; caret-color: transparent; }
+.typing-field textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; opacity: 0; resize: none; cursor: text; caret-color: transparent; font-size: 16px; line-height: 1.5; }
 .typing-sheet.is-paused .caret { visibility: hidden; }
 
 .attempt-controls {
@@ -253,21 +253,59 @@ button:focus-visible, textarea:focus-visible, .typing-sheet:focus-within { outli
   .practice-screen.is-complete .paper-stack { transform: translateX(-110px); }
 }
 
+@media (min-width: 781px) and (max-width: 1024px) {
+  .paperclip { display: none; }
+  .pen, .legal-pad { opacity: 0.58; }
+}
+
 @media (max-width: 780px) {
-  .desk { padding: 16px 12px 24px; overflow: auto; }
-  .pen, .paperclip, .legal-pad { opacity: 0.45; }
-  .folder { width: calc(100vw - 34px); }
+  .desk { padding: 10px 8px 32px; overflow: visible; }
+  .pen, .paperclip, .legal-pad { display: none; }
+  .folder { width: calc(100vw - 24px); opacity: 0.72; }
   .cover-sheet { width: calc(100vw - 42px); padding: 30px 28px; }
-  .practice-screen { align-items: start; }
-  .practice-folder { width: calc(100vw - 26px); height: calc(100dvh - 30px); }
-  .paper-stack { width: 100%; max-height: none; overflow: visible; padding: 0 4px 260px; }
-  .source-sheet, .typing-sheet { padding: 25px 24px; }
+  .practice-screen { min-height: 0; display: grid; align-items: start; }
+  .practice-folder { width: calc(100vw - 14px); height: min(640px, calc(100dvh - 18px)); }
+  .paper-stack { width: 100%; max-height: none; overflow: visible; padding: 0 0 18px; }
+  .source-sheet, .typing-sheet { padding: 21px 19px; transform: none; }
+  .source-sheet { min-height: 0; }
+  .typing-sheet { min-height: 230px; margin-top: -1px; }
   .document-heading { display: block; }
   .document-heading h1 { margin-top: 10px; }
-  .attempt-controls { align-items: flex-start; }
-  .attempt-controls div { gap: 10px 16px; }
+  .source-text, .typed-page { font-size: 1.0625rem; line-height: 1.55; }
+  .source-text { margin-top: 18px; }
+  .typed-page { min-height: 104px; margin-top: 16px; }
+  .attempt-controls { display: block; margin-top: 10px; padding-top: 8px; }
+  .attempt-controls p { min-height: 36px; display: flex; align-items: center; }
+  .attempt-controls div { display: flex; justify-content: space-between; gap: 2px 8px; }
+  .attempt-controls button,
+  .pause-notice button,
+  .document-confirm button { min-height: 44px; padding: 10px 4px; }
+  .pause-notice { min-height: 56px; margin-top: 8px; padding-top: 7px; }
+  .document-confirm { margin-top: 8px; padding-top: 11px; }
+  .document-confirm div { gap: 18px; }
   .practice-screen.is-complete .paper-stack { transform: none; }
-  .result-slip { position: absolute; right: 50%; bottom: 38px; top: auto; transform: translateX(50%) rotate(0.7deg); }
+  .result-slip {
+    position: relative;
+    inset: auto;
+    width: min(calc(100vw - 28px), 360px);
+    margin: 0 auto 34px;
+    padding: 24px 22px;
+    transform: rotate(0.45deg);
+  }
+  .result-actions button { min-height: 48px; }
+}
+
+@media (max-width: 340px) {
+  .source-sheet, .typing-sheet { padding-right: 16px; padding-left: 16px; }
+  .attempt-controls div { justify-content: flex-start; column-gap: 15px; }
+}
+
+@media (max-width: 780px) and (max-height: 600px) {
+  .desk { padding-top: 6px; }
+  .source-sheet { max-height: 46dvh; overflow-y: auto; overscroll-behavior: contain; }
+  .document-heading { position: sticky; top: -21px; z-index: 1; padding-top: 21px; background: var(--paper); }
+  .source-text { font-size: 1rem; line-height: 1.45; }
+  .typing-sheet { min-height: 210px; }
 }
 
 @media (max-height: 720px) and (min-width: 781px) {
