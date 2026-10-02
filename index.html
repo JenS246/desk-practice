@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="desk" aria-live="polite">
+    <main class="desk">
       <div class="desk-grain" aria-hidden="true"></div>
       <div class="legal-pad" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       <div class="pen" aria-hidden="true"></div>
@@ -43,10 +43,31 @@
           </article>
 
           <article class="paper typing-sheet" data-typing-sheet>
-            <label for="typing-input">Type the document here</label>
-            <div class="typed-page" data-typed-page aria-hidden="true"><span class="caret"></span></div>
-            <textarea id="typing-input" data-input rows="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
-            <p class="typing-help" data-typing-help>Begin typing. Backspace corrects a mistake.</p>
+            <label for="typing-input">Begin typing below.</label>
+            <div class="typing-field">
+              <div class="typed-page" data-typed-page aria-hidden="true"><span class="caret"></span></div>
+              <textarea id="typing-input" data-input rows="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+            </div>
+            <div class="pause-notice" data-pause-notice hidden>
+              <strong>Paused</strong>
+              <button type="button" data-resume>Resume</button>
+            </div>
+            <div class="document-confirm" data-confirm hidden>
+              <p>Start a different document? Your current attempt will be cleared.</p>
+              <div>
+                <button type="button" data-cancel-new>Cancel</button>
+                <button type="button" data-confirm-new>New document</button>
+              </div>
+            </div>
+            <footer class="attempt-controls" data-attempt-controls>
+              <p>Time <time datetime="PT0S" data-time>0:00</time></p>
+              <div>
+                <button type="button" data-pause>Pause</button>
+                <button type="button" data-restart>Restart</button>
+                <button type="button" data-new>New document</button>
+              </div>
+            </footer>
+            <p class="sr-status" data-status aria-live="polite"></p>
           </article>
         </div>
 
@@ -55,7 +76,8 @@
           <dl>
             <div><dt>Words per minute:</dt><dd data-wpm>0</dd></div>
             <div><dt>Accuracy:</dt><dd data-accuracy>0%</dd></div>
-            <div><dt>Errors:</dt><dd data-errors>0</dd></div>
+            <div><dt>Corrections:</dt><dd data-corrections>0</dd></div>
+            <div><dt>Time:</dt><dd data-result-time>0:00</dd></div>
           </dl>
           <p class="result-source" data-result-source hidden></p>
           <div class="result-actions">
@@ -67,6 +89,7 @@
     </main>
 
     <script src="passages.js"></script>
+    <script src="typing-engine.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

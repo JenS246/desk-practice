@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "node --check app.js && node --check passages.js && node tests/content.test.js && node tests/project.test.js"
+    "test": "node --check app.js && node --check typing-engine.js && node --check passages.js && node tests/content.test.js && node tests/interactions.test.js && node tests/project.test.js"
   }
 }

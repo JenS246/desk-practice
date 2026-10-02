@@ -1,14 +1,16 @@
 # Desk Practice
 
-Desk Practice is a quiet, document-first typing game for paralegal students in a Legal Internship course. It places a short legal-office document on a modest desk, gives the student a second sheet for typing, and reports words per minute, accuracy, and errors when the document is complete.
+Desk Practice is a quiet, document-first typing game for paralegal students in a Legal Internship course. It places a short legal-office document on a modest desk, gives the student a second sheet for typing, and reports words per minute, accuracy, corrections, and elapsed time when the document is complete.
 
 ## How it works
 
-- Selects randomly from 60 locally stored passages.
+- Selects randomly from 67 locally stored passages.
 - Cycles through the full passage bank before repeating a document when browser storage is available.
 - Marks the current source character and shows incorrect typed characters with color plus an underline.
 - Allows normal backspacing and correction at any point.
-- Calculates standard five-character words per minute, keystroke accuracy, and errors.
+- Provides Pause, Resume, Restart, and New document controls without leaving the desk.
+- Excludes paused and confirmation time from elapsed typing time.
+- Calculates standard five-character words per minute, behavior-based keystroke accuracy, and corrections.
 - Uses no backend, account, analytics, or third-party runtime dependency.
 
 Passages are fictional classroom materials representing client notes, email drafts, letters, case summaries, procedural summaries, docket entries, research notes, and several common practice areas. The short court-opinion passages are original instructional text, not quotations from actual opinions.
@@ -29,7 +31,7 @@ Open `http://localhost:4173`.
 npm test
 ```
 
-The content test confirms the passage count, unique identifiers, 60-180 word range, headings, and punctuation requirements.
+The test suite confirms the passage bank, interface requirements, and all seven typing, pause, restart, confirmation, retry, and next-document sequences.
 
 ## Files
 
@@ -37,8 +39,10 @@ The content test confirms the passage count, unique identifiers, 60-180 word ran
 - `styles.css`: responsive desk scene, paper surfaces, focus states, and reduced-motion support
 - `favicon.svg`: simple paper-file browser icon
 - `passages.js`: local passage bank
-- `app.js`: deck randomization, typing behavior, and results
+- `typing-engine.js`: timer, correction scoring, attempt state, and non-repeating deck logic
+- `app.js`: desk rendering, keyboard input, controls, and results
 - `tests/content.test.js`: passage validation
+- `tests/interactions.test.js`: required interaction-sequence coverage
 
 ## Deployment
 

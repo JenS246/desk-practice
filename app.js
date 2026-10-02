@@ -2,57 +2,44 @@
   "use strict";
 
   const STORAGE_KEY = "desk-practice-deck-v1";
+  const { Attempt, drawFromDeck, formatTime } = DeskTyping;
+  const attempt = new Attempt();
+
   const home = document.querySelector('[data-screen="home"]');
   const practice = document.querySelector('[data-screen="practice"]');
-  const startButton = document.querySelector("[data-start]");
-  const nextButton = document.querySelector("[data-next]");
-  const retryButton = document.querySelector("[data-retry]");
   const input = document.querySelector("[data-input]");
   const sourceText = document.querySelector("[data-source-text]");
   const typedPage = document.querySelector("[data-typed-page]");
   const documentType = document.querySelector("[data-document-type]");
-  const typingHelp = document.querySelector("[data-typing-help]");
   const sourceLine = document.querySelector("[data-source]");
   const results = document.querySelector("[data-results]");
   const resultSource = document.querySelector("[data-result-source]");
   const typingSheet = document.querySelector("[data-typing-sheet]");
   const paperStack = document.querySelector(".paper-stack");
-
+  const attemptControls = document.querySelector("[data-attempt-controls]");
+  const pauseNotice = document.querySelector("[data-pause-notice]");
+  const confirmNotice = document.querySelector("[data-confirm]");
+  const pauseButton = document.querySelector("[data-pause]");
+  const status = document.querySelector("[data-status]");
+  const timeDisplay = document.querySelector("[data-time]");
   let current = null;
-  let startedAt = 0;
-  let keystrokes = 0;
-  let errors = 0;
-  let complete = false;
 
-  function shuffle(values) {
-    const copy = [...values];
-    for (let i = copy.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy;
-  }
-
-  function loadDeck() {
+  function readSavedDeck() {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      const valid = Array.isArray(saved) && saved.every((id) => DESK_PASSAGES.some((item) => item.id === id));
-      if (valid && saved.length) return saved;
+      return JSON.parse(localStorage.getItem(STORAGE_KEY));
     } catch (error) {
-      // A fresh deck is safe when browser storage is unavailable or malformed.
+      return [];
     }
-    return shuffle(DESK_PASSAGES.map((item) => item.id));
   }
 
-  function drawPassage() {
-    let deck = loadDeck();
-    const id = deck.shift();
+  function drawPassage(excludeId = "") {
+    const draw = drawFromDeck(DESK_PASSAGES, readSavedDeck(), excludeId);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(deck));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(draw.remaining));
     } catch (error) {
       // The game still works when private browsing blocks persistent storage.
     }
-    return DESK_PASSAGES.find((item) => item.id === id) || DESK_PASSAGES[0];
+    return draw.passage;
   }
 
   function makeSpan(text, className) {
@@ -65,7 +52,7 @@
   function renderSource(position) {
     sourceText.replaceChildren();
     [...current.text].forEach((character, index) => {
-      sourceText.append(makeSpan(character, index === position && !complete ? "current-char" : ""));
+      sourceText.append(makeSpan(character, index === position && attempt.phase !== "complete" ? "current-char" : ""));
     });
   }
 
@@ -74,19 +61,39 @@
     [...value].forEach((character, index) => {
       typedPage.append(makeSpan(character, character === current.text[index] ? "correct" : "wrong"));
     });
-    if (!complete) typedPage.append(makeSpan("", "caret"));
+    if (attempt.phase !== "complete") typedPage.append(makeSpan("", "caret"));
+  }
+
+  function updateTime() {
+    const milliseconds = attempt.elapsedMs();
+    timeDisplay.textContent = formatTime(milliseconds);
+    timeDisplay.dateTime = `PT${Math.floor(milliseconds / 1000)}S`;
+  }
+
+  function focusInput() {
+    requestAnimationFrame(() => input.focus());
+  }
+
+  function syncPhase() {
+    const isActive = attempt.phase === "active";
+    const isPaused = attempt.phase === "paused";
+    const isConfirming = attempt.phase === "confirming";
+    const isComplete = attempt.phase === "complete";
+
+    input.disabled = !isActive;
+    pauseNotice.hidden = !isPaused;
+    confirmNotice.hidden = !isConfirming;
+    attemptControls.hidden = isComplete || isConfirming;
+    pauseButton.hidden = isPaused;
+    typingSheet.classList.toggle("is-paused", isPaused || isConfirming);
+    updateTime();
   }
 
   function begin(passage) {
     current = passage;
-    startedAt = 0;
-    keystrokes = 0;
-    errors = 0;
-    complete = false;
+    attempt.begin(passage);
     input.value = "";
-    input.disabled = false;
     documentType.textContent = current.type;
-    typingHelp.textContent = "Begin typing. Backspace corrects a mistake.";
     sourceLine.hidden = true;
     sourceLine.textContent = "";
     results.hidden = true;
@@ -94,28 +101,20 @@
     resultSource.replaceChildren();
     practice.classList.remove("is-complete");
     paperStack.scrollTop = 0;
+    status.textContent = "Document ready.";
     renderSource(0);
     renderTyped("");
-    requestAnimationFrame(() => input.focus());
-  }
-
-  function showPractice() {
-    home.hidden = true;
-    practice.hidden = false;
-    begin(drawPassage());
+    syncPhase();
+    focusInput();
   }
 
   function finish() {
-    complete = true;
-    input.disabled = true;
-    const elapsedMinutes = Math.max((performance.now() - startedAt) / 60000, 1 / 60);
-    const wpm = Math.round((current.text.length / 5) / elapsedMinutes);
-    const accuracy = keystrokes ? Math.max(0, Math.round(((keystrokes - errors) / keystrokes) * 100)) : 100;
-
-    document.querySelector("[data-wpm]").textContent = String(wpm);
-    document.querySelector("[data-accuracy]").textContent = `${accuracy}%`;
-    document.querySelector("[data-errors]").textContent = String(errors);
-    typingHelp.textContent = "Document complete.";
+    const metrics = attempt.metrics();
+    document.querySelector("[data-wpm]").textContent = String(metrics.wpm);
+    document.querySelector("[data-accuracy]").textContent = `${metrics.accuracy}%`;
+    document.querySelector("[data-corrections]").textContent = String(metrics.corrections);
+    document.querySelector("[data-result-time]").textContent = formatTime(metrics.elapsed);
+    status.textContent = "Document complete.";
 
     if (current.source) {
       resultSource.append("Source: ");
@@ -136,31 +135,76 @@
     renderTyped(current.text);
     results.hidden = false;
     practice.classList.add("is-complete");
-    nextButton.focus();
+    syncPhase();
+    document.querySelector("[data-next]").focus();
   }
 
   input.addEventListener("beforeinput", (event) => {
-    if (complete || event.inputType.startsWith("delete")) return;
-    if (!startedAt) startedAt = performance.now();
-    const inserted = event.data || "";
-    const position = input.value.length;
-    for (let index = 0; index < inserted.length; index += 1) {
-      keystrokes += 1;
-      if (inserted[index] !== current.text[position + index]) errors += 1;
-    }
+    if (event.inputType.startsWith("delete")) return;
+    const inserted = event.data ?? (event.inputType === "insertLineBreak" ? "\n" : "");
+    if (inserted) attempt.recordInsertion(inserted, input.selectionStart);
   });
 
   input.addEventListener("input", () => {
-    if (complete) return;
-    if (input.value.length > current.text.length) input.value = input.value.slice(0, current.text.length);
-    renderSource(input.value.length);
-    renderTyped(input.value);
-    if (input.value === current.text) finish();
+    if (attempt.phase !== "active") return;
+    const finished = attempt.updateValue(input.value);
+    if (input.value !== attempt.value) input.value = attempt.value;
+    renderSource(attempt.value.length);
+    renderTyped(attempt.value);
+    if (finished) finish();
   });
 
   input.addEventListener("paste", (event) => event.preventDefault());
-  typingSheet.addEventListener("click", () => { if (!complete) input.focus(); });
-  startButton.addEventListener("click", showPractice);
-  nextButton.addEventListener("click", () => begin(drawPassage()));
-  retryButton.addEventListener("click", () => begin(current));
+  typingSheet.addEventListener("click", (event) => {
+    if (attempt.phase === "active" && !event.target.closest("button")) input.focus();
+  });
+
+  document.querySelector("[data-start]").addEventListener("click", () => {
+    home.hidden = true;
+    practice.hidden = false;
+    begin(drawPassage());
+  });
+
+  pauseButton.addEventListener("click", () => {
+    attempt.pause();
+    status.textContent = "Paused.";
+    syncPhase();
+    document.querySelector("[data-resume]").focus();
+  });
+
+  document.querySelector("[data-resume]").addEventListener("click", () => {
+    attempt.resume();
+    status.textContent = "Typing resumed.";
+    syncPhase();
+    focusInput();
+  });
+
+  document.querySelector("[data-restart]").addEventListener("click", () => begin(current));
+
+  document.querySelector("[data-new]").addEventListener("click", () => {
+    if (!attempt.value.length) {
+      begin(drawPassage(current.id));
+      return;
+    }
+    attempt.requestConfirmation();
+    status.textContent = "Confirm a different document.";
+    syncPhase();
+    document.querySelector("[data-cancel-new]").focus();
+  });
+
+  document.querySelector("[data-cancel-new]").addEventListener("click", () => {
+    attempt.cancelConfirmation();
+    status.textContent = attempt.phase === "paused" ? "Paused." : "Typing resumed.";
+    syncPhase();
+    if (attempt.phase === "active") focusInput();
+    else document.querySelector("[data-resume]").focus();
+  });
+
+  document.querySelector("[data-confirm-new]").addEventListener("click", () => begin(drawPassage(current.id)));
+  document.querySelector("[data-next]").addEventListener("click", () => begin(drawPassage(current.id)));
+  document.querySelector("[data-retry]").addEventListener("click", () => begin(current));
+
+  setInterval(() => {
+    if (attempt.phase === "active" && attempt.timerStarted) updateTime();
+  }, 250);
 })();
