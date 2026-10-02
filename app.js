@@ -22,6 +22,19 @@
   const status = document.querySelector("[data-status]");
   const timeDisplay = document.querySelector("[data-time]");
   let current = null;
+  let selectedDuration = 0;
+  let deadline = null;
+
+  function scheduleDeadline() {
+    clearTimeout(deadline);
+    deadline = null;
+    if (attempt.durationMs && attempt.phase === "active" && attempt.timerStarted) {
+      deadline = setTimeout(() => {
+        if (attempt.checkExpiry()) finish();
+        else scheduleDeadline();
+      }, attempt.remainingMs());
+    }
+  }
 
   function readSavedDeck() {
     try {
@@ -66,7 +79,8 @@
   }
 
   function updateTime() {
-    const milliseconds = attempt.elapsedMs();
+    const milliseconds = attempt.durationMs ? Math.ceil(attempt.remainingMs() / 1000) * 1000 : attempt.elapsedMs();
+    document.querySelector("[data-time-label]").textContent = attempt.durationMs ? "Time left" : "Time";
     timeDisplay.textContent = formatTime(milliseconds);
     timeDisplay.dateTime = `PT${Math.floor(milliseconds / 1000)}S`;
   }
@@ -76,6 +90,7 @@
   }
 
   function syncPhase() {
+    scheduleDeadline();
     const isActive = attempt.phase === "active";
     const isPaused = attempt.phase === "paused";
     const isConfirming = attempt.phase === "confirming";
@@ -92,7 +107,7 @@
 
   function begin(passage) {
     current = passage;
-    attempt.begin(passage);
+    attempt.begin(passage, selectedDuration);
     input.value = "";
     documentType.textContent = current.type;
     sourceLine.hidden = true;
@@ -103,6 +118,9 @@
     practice.classList.remove("is-complete");
     paperStack.scrollTop = 0;
     status.textContent = "Document ready.";
+    for (const selector of ["[data-wpm]", "[data-errors]"]) document.querySelector(selector).textContent = "0";
+    document.querySelector("[data-accuracy]").textContent = "0%";
+    document.querySelector("[data-result-time]").textContent = "0:00";
     renderSourceProgress("");
     resizeInput();
     syncPhase();
@@ -110,6 +128,8 @@
   }
 
   function finish() {
+    clearTimeout(deadline);
+    document.querySelector("#results-title").textContent = attempt.durationMs ? "Practice complete" : "Completed";
     const metrics = attempt.metrics();
     document.querySelector("[data-wpm]").textContent = String(metrics.wpm);
     document.querySelector("[data-accuracy]").textContent = `${metrics.accuracy}%`;
@@ -144,14 +164,25 @@
   }
 
   input.addEventListener("beforeinput", (event) => {
+    if (attempt.checkExpiry()) {
+      event.preventDefault();
+      finish();
+      return;
+    }
+    if (attempt.phase !== "active") {
+      event.preventDefault();
+      return;
+    }
     if (event.inputType.startsWith("delete")) return;
     const inserted = event.data ?? (event.inputType === "insertLineBreak" ? "\n" : "");
     if (inserted) attempt.recordInsertion(inserted);
+    scheduleDeadline();
   });
 
   input.addEventListener("input", () => {
     if (attempt.phase !== "active") return;
     const finished = attempt.updateValue(input.value);
+    if (finished) input.value = attempt.value;
     resizeInput();
     renderSourceProgress(attempt.value);
     if (finished) finish();
@@ -163,12 +194,14 @@
   input.addEventListener("select", () => renderSourceProgress(input.value));
 
   document.querySelector("[data-start]").addEventListener("click", () => {
+    selectedDuration = Number(document.querySelector('input[name="practice-duration"]:checked').value);
     home.hidden = true;
     practice.hidden = false;
     begin(drawPassage());
   });
 
   pauseButton.addEventListener("click", () => {
+    if (attempt.checkExpiry()) { finish(); return; }
     attempt.pause();
     status.textContent = "Paused.";
     syncPhase();
@@ -185,6 +218,7 @@
   document.querySelector("[data-restart]").addEventListener("click", () => begin(current));
 
   document.querySelector("[data-new]").addEventListener("click", () => {
+    if (attempt.checkExpiry()) { finish(); return; }
     if (!attempt.value.length) {
       begin(drawPassage(current.id));
       return;
@@ -208,6 +242,7 @@
   document.querySelector("[data-retry]").addEventListener("click", () => begin(current));
 
   setInterval(() => {
+    if (attempt.checkExpiry()) { finish(); return; }
     if (attempt.phase === "active" && attempt.timerStarted) updateTime();
   }, 250);
 })();

@@ -37,9 +37,8 @@ const requirements = [
   [app.includes('inputType.startsWith("delete")'), "Editable mistake handling is missing."],
   [app.includes("resizeInput()"), "The visible textarea must grow with its typed content."],
   [!app.includes('document.querySelector("[data-next]").focus()'), "Completion must not focus Next document."],
-  [!app.includes("setTimeout("), "Results must not use a timed transition."],
   [engine.includes('phase = "paused"'), "Pause state is missing."],
-  [engine.includes("errors / this.passage.text.length"), "Final alignment accuracy is missing."],
+  [engine.includes("errors / attemptedLength"), "Alignment accuracy over the attempted source is missing."],
   [!engine.includes("value.slice(0, this.passage.text.length)"), "Typed input must not be truncated to passage length."],
   [engine.includes("function alignText"), "Alignment-aware comparison is missing."],
   [engine.includes("function hasReachedEnd"), "Progress-based completion is missing."]

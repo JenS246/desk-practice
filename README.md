@@ -10,6 +10,10 @@ Desk Practice is a quiet, document-first typing game for paralegal students in a
 - Allows native caret placement, selection, arrow keys, Backspace, Delete, and correction at any point.
 - Provides Pause, Resume, Restart, and New document controls without leaving the desk.
 - Excludes paused and confirmation time from elapsed typing time.
+- Defaults to Full document, with optional 30-second, 60-second, and 2-minute practice choices on the opening paper.
+- Starts timed countdowns with the first typed character. Timed practice ends at zero or when the source is completed early.
+- Scores timed expiry against the aligned attempted portion only; unread source text never counts as an error. Timed WPM uses actual typed output over active time.
+- Preserves the selected duration through Restart, New document, Try again, and Next document.
 - Completes when aligned typing reaches the end of the source, without requiring mistakes to be corrected.
 - Keeps the completed attempt and results visible until Next document or Try again is deliberately clicked or tapped.
 - Calculates five-character words per minute, alignment-based final accuracy, and unresolved insertions, deletions, and substitutions.
@@ -46,6 +50,7 @@ The test suite confirms the passage bank, interface requirements, and twelve gam
 - `app.js`: desk rendering, keyboard input, controls, and results
 - `tests/content.test.js`: passage validation
 - `tests/interactions.test.js`: required interaction-sequence coverage
+- `tests/timed.test.js`: countdown, partial scoring, pause, reset, and early-completion coverage
 
 ## Deployment
 

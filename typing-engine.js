@@ -150,8 +150,10 @@
       this.begin({ id: "", text: "" });
     }
 
-    begin(passage) {
+    begin(passage, durationMs = 0) {
       this.passage = passage;
+      this.durationMs = [30000, 60000, 120000].includes(durationMs) ? durationMs : 0;
+      this.completionReason = null;
       this.phase = "active";
       this.returnPhase = "active";
       this.timerStarted = false;
@@ -167,10 +169,12 @@
 
     updateValue(value) {
       if (this.phase !== "active") return false;
+      if (this.checkExpiry()) return true;
       this.value = value;
       if (hasReachedEnd(this.passage.text, this.value)) {
         this.stopClock();
         this.phase = "complete";
+        this.completionReason = "document";
         return true;
       }
       return false;
@@ -214,19 +218,34 @@
     }
 
     elapsedMs() {
-      if (this.activeStartedAt === null) return this.elapsedBeforePeriod;
-      return this.elapsedBeforePeriod + (this.now() - this.activeStartedAt);
+      const elapsed = this.elapsedBeforePeriod + (this.activeStartedAt === null ? 0 : this.now() - this.activeStartedAt);
+      return this.durationMs ? Math.min(elapsed, this.durationMs) : elapsed;
+    }
+
+    remainingMs() {
+      return Math.max(0, this.durationMs - this.elapsedMs());
+    }
+
+    checkExpiry() {
+      if (this.phase !== "active" || !this.durationMs || !this.timerStarted || this.remainingMs() > 0) return false;
+      this.stopClock();
+      this.elapsedBeforePeriod = this.durationMs;
+      this.phase = "complete";
+      this.completionReason = "time";
+      return true;
     }
 
     metrics() {
-      const comparison = compareText(this.passage.text, this.value, true);
+      const partialAttempt = this.durationMs && this.completionReason !== "document";
+      const comparison = compareText(this.passage.text, this.value, !partialAttempt);
+      const attemptedLength = partialAttempt ? comparison.alignedSourceEnd : this.passage.text.length;
       const errors = comparison.editDistance;
-      const accuracy = this.passage.text.length
-        ? Math.max(0, Math.round((1 - errors / this.passage.text.length) * 100))
-        : 100;
+      const accuracy = attemptedLength
+        ? Math.max(0, Math.round((1 - errors / attemptedLength) * 100))
+        : (errors ? 0 : 100);
       const elapsed = this.elapsedMs();
       const elapsedMinutes = Math.max(elapsed, 1000) / 60000;
-      const acceptedCharacters = Math.min(this.value.length, this.passage.text.length);
+      const acceptedCharacters = this.durationMs ? this.value.length : Math.min(this.value.length, this.passage.text.length);
       const wpm = Math.round((acceptedCharacters / 5) / elapsedMinutes);
       return { wpm, accuracy, errors, elapsed };
     }

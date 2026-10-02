@@ -99,6 +99,12 @@ button { cursor: pointer; }
 .course-name { margin: 18px 0 0; font-size: clamp(1.12rem, 2vw, 1.35rem); line-height: 1.4; }
 .instruction { margin: clamp(54px, 10vh, 90px) 0 24px; font-family: Georgia, "Times New Roman", serif; font-size: 1.12rem; line-height: 1.5; }
 .paper-footer { position: absolute; left: clamp(34px, 6vw, 66px); bottom: 34px; margin: 0; color: #74766f; font-size: 0.72rem; letter-spacing: 0.12em; }
+.cover-sheet { padding-bottom: 90px; }
+.practice-options { margin: 0 0 24px; padding: 0; border: 0; font-family: Georgia, "Times New Roman", serif; }
+.practice-options legend { margin-bottom: 6px; font-weight: 700; }
+.practice-options label { display: flex; align-items: center; gap: 10px; min-height: 44px; width: fit-content; cursor: pointer; }
+.practice-options input { margin: 0; width: 18px; height: 18px; accent-color: var(--navy); }
+.practice-options input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
 .start-button, .result-actions button {
   min-height: 46px;
