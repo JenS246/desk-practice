@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="A quiet legal-office typing practice game for paralegal students." />
+    <meta name="theme-color" content="#d8d0c2" />
+    <title>Desk Practice | Legal Internship Typing Practice</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="desk" aria-live="polite">
+      <div class="desk-grain" aria-hidden="true"></div>
+      <div class="legal-pad" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="pen" aria-hidden="true"></div>
+      <div class="paperclip" aria-hidden="true"></div>
+
+      <section class="home-screen" data-screen="home">
+        <div class="folder" aria-hidden="true"></div>
+        <article class="paper cover-sheet">
+          <p class="office-mark">HARTWELL &amp; PIKE</p>
+          <div class="cover-copy">
+            <h1>Desk Practice</h1>
+            <p class="course-name">Legal Internship Typing Practice</p>
+            <p class="instruction">Type the document exactly as it appears.</p>
+            <button class="start-button" type="button" data-start>Start</button>
+          </div>
+          <p class="paper-footer">TRAINING COPY</p>
+        </article>
+      </section>
+
+      <section class="practice-screen" data-screen="practice" hidden>
+        <div class="folder practice-folder" aria-hidden="true"></div>
+        <div class="paper-stack">
+          <article class="paper source-sheet" aria-labelledby="document-type">
+            <header class="document-heading">
+              <p class="office-mark">HARTWELL &amp; PIKE</p>
+              <h1 id="document-type" data-document-type></h1>
+            </header>
+            <p class="source-text" data-source-text aria-label="Text to type"></p>
+            <p class="source-line" data-source hidden></p>
+          </article>
+
+          <article class="paper typing-sheet" data-typing-sheet>
+            <label for="typing-input">Type the document here</label>
+            <div class="typed-page" data-typed-page aria-hidden="true"><span class="caret"></span></div>
+            <textarea id="typing-input" data-input rows="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+            <p class="typing-help" data-typing-help>Begin typing. Backspace corrects a mistake.</p>
+          </article>
+        </div>
+
+        <aside class="result-slip" data-results hidden aria-labelledby="results-title">
+          <h2 id="results-title">Completed</h2>
+          <dl>
+            <div><dt>Words per minute:</dt><dd data-wpm>0</dd></div>
+            <div><dt>Accuracy:</dt><dd data-accuracy>0%</dd></div>
+            <div><dt>Errors:</dt><dd data-errors>0</dd></div>
+          </dl>
+          <p class="result-source" data-result-source hidden></p>
+          <div class="result-actions">
+            <button type="button" data-next>Next document</button>
+            <button type="button" class="plain-button" data-retry>Try again</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="passages.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

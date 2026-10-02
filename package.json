@@ -1,0 +1,8 @@
+{
+  "name": "desk-practice",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --check app.js && node --check passages.js && node tests/content.test.js && node tests/project.test.js"
+  }
+}
