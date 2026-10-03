@@ -2,7 +2,7 @@
 
 Desk Practice is a quiet, document-first typing game for paralegal students in a Legal Internship course. It places a short legal-office document on a modest desk, gives the student a second sheet for typing, and reports words per minute, alignment-based accuracy, final errors, and elapsed time when the document is complete.
 
-The presentation uses plain paper, a desk surface, and a desktop folder, without fictional firm branding. Phones show small folder and legal-pad fragments behind the papers, plus a paperclip on the opening sheet. These CSS-only decorations are noninteractive and hidden from assistive technology. Practice choices remain native radio buttons and in-game controls remain simple text actions.
+The presentation uses plain paper and a desk surface, without fictional firm branding. Desktop shows a full manila folder, a partial ruled legal pad, an ordinary pen, and a paperclip on the opening sheet. Phones retain small folder and legal-pad fragments behind the papers, plus the opening-sheet paperclip. These CSS-only decorations are noninteractive and hidden from assistive technology. Practice choices remain native radio buttons and in-game controls remain simple text actions.
 
 ## How it works
 
