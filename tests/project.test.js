@@ -7,7 +7,9 @@ const engine = fs.readFileSync("typing-engine.js", "utf8");
 
 const requirements = [
   [!html.includes("HARTWELL") && !html.includes("TRAINING COPY"), "Decorative branding must not return."],
-  [!html.includes('class="pen"') && !html.includes('class="legal-pad"') && !html.includes('class="paperclip"'), "Extra desk props must remain removed."],
+  [!html.includes('class="pen"') && !html.includes('class="legal-pad"'), "Full-size desk props must not return."],
+  [(html.match(/class="desk-fragment [^"]+" aria-hidden="true"/g) || []).length === 5, "Mobile desk fragments must be decorative and hidden from assistive technology."],
+  [css.includes('.desk-fragment { display: none; pointer-events: none; }'), "Desk fragments must not intercept touches or affect desktop."],
   [html.includes('data-start'), "Start control is missing."],
   [html.includes('data-next'), "Next document control is missing."],
   [html.includes('data-retry'), "Try again control is missing."],

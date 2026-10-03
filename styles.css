@@ -92,6 +92,8 @@ button { cursor: pointer; }
 }
 
 .home-screen { min-height: calc(100dvh - clamp(44px, 8vh, 92px)); display: grid; place-items: center; }
+.home-paper { display: contents; }
+.desk-fragment { display: none; pointer-events: none; }
 .cover-sheet { width: min(650px, calc(100vw - 60px)); padding: clamp(30px, 5vw, 52px); transform: rotate(-0.55deg); }
 .cover-copy h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; font-weight: 500; }
 .course-name { margin: 14px 0 0; font-size: 1.12rem; line-height: 1.4; }
@@ -235,12 +237,72 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
 }
 
 @media (max-width: 780px) {
-  .desk { padding: 10px 8px 32px; overflow: visible; }
+  .desk { padding: 28px 8px 32px; overflow: visible; }
   .home-screen > .folder { display: none; }
-  .cover-sheet { width: calc(100vw - 42px); padding: 30px 28px; transform: none; }
+  .home-paper { display: block; position: relative; isolation: isolate; width: calc(100vw - 42px); }
+  .cover-sheet { width: 100%; padding: 30px 28px; transform: none; }
+  .desk-fragment { display: block; position: absolute; z-index: -1; }
+  .folder-fragment {
+    top: -5px;
+    left: -5px;
+    width: calc(100% - 4px);
+    height: 90px;
+    background: var(--folder);
+    border: 1px solid #a48d58;
+    transform: rotate(-0.6deg);
+  }
+  .folder-fragment::before {
+    content: "";
+    position: absolute;
+    top: -13px;
+    left: 15px;
+    width: 82px;
+    height: 14px;
+    border: 1px solid #a48d58;
+    border-bottom: 0;
+    border-radius: 3px 3px 0 0;
+    background: var(--folder);
+  }
+  .pad-fragment {
+    bottom: -11px;
+    right: 0;
+    width: 94px;
+    height: 88px;
+    background: #eadf99;
+    border: 1px solid #c8bb79;
+    transform: rotate(4deg);
+  }
+  .pad-fragment::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+    height: 1px;
+    background: rgba(75, 102, 137, 0.3);
+    box-shadow: 0 -18px rgba(75, 102, 137, 0.3), 0 -36px rgba(75, 102, 137, 0.3);
+  }
+  .clip-fragment {
+    z-index: 2;
+    top: -9px;
+    left: 31px;
+    width: 13px;
+    height: 35px;
+    border: 2px solid #777c7b;
+    border-radius: 7px;
+    transform: rotate(-7deg);
+  }
+  .clip-fragment::before {
+    content: "";
+    position: absolute;
+    inset: 4px 2px 3px;
+    border: 1px solid #8c9291;
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+  }
   .practice-screen { width: 100%; min-height: 0; display: block; }
   .practice-folder { display: none; }
-  .paper-stack { width: 100%; max-height: none; overflow: visible; padding: 0; }
+  .paper-stack { width: 100%; max-height: none; overflow: visible; padding: 0; isolation: isolate; }
   .source-sheet, .typing-sheet { width: 100%; padding: 22px 20px; transform: none; }
   .source-sheet { min-height: 0; }
   .typing-sheet { min-height: 224px; margin-top: -1px; }
@@ -262,10 +324,10 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
   .result-slip {
     position: relative;
     inset: auto;
-    width: min(calc(100vw - 16px), 360px);
+    width: min(100%, 360px);
     margin: 12px auto 24px;
     padding: 24px 22px;
-    transform: none;
+    transform: rotate(0.6deg);
   }
   .result-actions button { min-height: 48px; }
 }
@@ -276,7 +338,7 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
 }
 
 @media (max-width: 780px) and (max-height: 600px) {
-  .desk { padding-top: 6px; }
+  .desk { padding-top: 25px; }
   .source-sheet { max-height: 46dvh; overflow-y: auto; overscroll-behavior: contain; }
   .document-heading { position: sticky; top: -21px; z-index: 1; padding-top: 21px; background: var(--paper); }
   .source-text { font-size: 1rem; line-height: 1.45; }

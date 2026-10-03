@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#d8d0c2" />
     <title>Desk Practice | Legal Internship Typing Practice</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=classroom-1" />
+    <link rel="stylesheet" href="styles.css?v=mobile-desk-1" />
   </head>
   <body>
     <main class="desk">
@@ -15,6 +15,10 @@
 
       <section class="home-screen" data-screen="home">
         <div class="folder" aria-hidden="true"></div>
+        <div class="home-paper">
+          <span class="desk-fragment folder-fragment" aria-hidden="true"></span>
+          <span class="desk-fragment pad-fragment" aria-hidden="true"></span>
+          <span class="desk-fragment clip-fragment" aria-hidden="true"></span>
         <article class="paper cover-sheet">
           <div class="cover-copy">
             <h1>Desk Practice</h1>
@@ -30,11 +34,14 @@
             <button class="start-button" type="button" data-start>Start</button>
           </div>
         </article>
+        </div>
       </section>
 
       <section class="practice-screen" data-screen="practice" hidden>
         <div class="folder practice-folder" aria-hidden="true"></div>
         <div class="paper-stack">
+          <span class="desk-fragment folder-fragment" aria-hidden="true"></span>
+          <span class="desk-fragment pad-fragment" aria-hidden="true"></span>
           <article class="paper source-sheet" aria-labelledby="document-type">
             <header class="document-heading">
               <h1 id="document-type" data-document-type></h1>
