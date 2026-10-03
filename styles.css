@@ -293,6 +293,7 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
 }
 
 @media (max-width: 780px) {
+  html, body { overflow-x: clip; overflow-y: visible; }
   .desk { padding: 28px 8px 32px; overflow: visible; }
   .home-screen > .folder { display: none; }
   .home-paper { display: block; position: relative; z-index: 1; width: calc(100vw - 42px); }
@@ -363,9 +364,17 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
   .practice-folder { display: none; }
   .paper-stack { position: relative; z-index: 1; width: 100%; max-height: none; overflow: visible; padding: 0; }
   .source-sheet, .typing-sheet { position: relative; z-index: 1; width: 100%; padding: 22px 20px; transform: none; }
-  .source-sheet { min-height: 0; }
+  .source-sheet {
+    position: sticky;
+    top: var(--practice-view-top, 0px);
+    z-index: 3;
+    min-height: 0;
+    max-height: min(240px, calc(var(--practice-view-height, 100dvh) * 0.38));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
   .typing-sheet { min-height: 224px; margin-top: -1px; }
-  .document-heading { display: block; }
+  .document-heading { display: block; position: sticky; top: -21px; z-index: 1; padding-top: 21px; background: var(--paper); margin-top: -21px; }
   .document-heading h1 { margin-top: 0; }
   .source-text, .typing-field textarea { font-size: 1.0625rem; line-height: 1.55; }
   .source-text { margin-top: 18px; }
@@ -379,6 +388,8 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
     opacity: 1;
     background: transparent;
     caret-color: var(--navy);
+    max-height: calc(var(--practice-view-height, 100dvh) * 0.32);
+    overflow-y: auto;
   }
   .attempt-controls, .pause-notice, .document-confirm { position: relative; z-index: 2; }
   .attempt-controls { display: block; margin-top: 12px; padding-top: 10px; }
@@ -410,8 +421,6 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
 
 @media (max-width: 780px) and (max-height: 600px) {
   .desk { padding-top: 25px; }
-  .source-sheet { max-height: 46dvh; overflow-y: auto; overscroll-behavior: contain; }
-  .document-heading { position: sticky; top: -21px; z-index: 1; padding-top: 21px; background: var(--paper); }
   .source-text { font-size: 1rem; line-height: 1.45; }
   .typing-sheet { min-height: 210px; }
 }

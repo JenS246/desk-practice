@@ -27,6 +27,27 @@
   let ticker = null;
   let confirmationAction = "new";
 
+  function updateVisibleViewport() {
+    const viewport = window.visualViewport;
+    practice.style.setProperty("--practice-view-height", `${viewport?.height ?? window.innerHeight}px`);
+    practice.style.setProperty("--practice-view-top", `${viewport?.offsetTop ?? 0}px`);
+    requestAnimationFrame(keepTypingVisible);
+  }
+
+  function keepTypingVisible() {
+    if (practice.hidden || document.activeElement !== input || !window.matchMedia("(max-width: 780px)").matches) return;
+    const sourceBottom = sourceText.closest(".source-sheet").getBoundingClientRect().bottom;
+    const inputTop = input.getBoundingClientRect().top;
+    if (inputTop < sourceBottom + 8) {
+      window.scrollTo({ top: Math.max(0, window.scrollY - (sourceBottom + 8 - inputTop)), behavior: "instant" });
+    }
+  }
+
+  updateVisibleViewport();
+  window.addEventListener("resize", updateVisibleViewport);
+  window.visualViewport?.addEventListener("resize", updateVisibleViewport);
+  window.visualViewport?.addEventListener("scroll", updateVisibleViewport);
+
   function returnHome() {
     attempt.stopClock();
     clearTimeout(deadline);
@@ -112,11 +133,25 @@
       const className = index === currentSourcePosition && attempt.phase !== "complete" ? "current-char" : "";
       sourceText.append(makeSpan(character, className));
     });
+    if (window.matchMedia("(max-width: 780px)").matches) {
+      const marker = sourceText.querySelector(".current-char");
+      const sheet = sourceText.closest(".source-sheet");
+      if (marker && sheet) {
+        const markerBounds = marker.getBoundingClientRect();
+        const sheetBounds = sheet.getBoundingClientRect();
+        const headingHeight = documentType.closest(".document-heading").getBoundingClientRect().height;
+        const visibleTop = sheetBounds.top + headingHeight + 12;
+        const visibleBottom = sheetBounds.bottom - 12;
+        if (markerBounds.top < visibleTop) sheet.scrollTop += markerBounds.top - visibleTop;
+        else if (markerBounds.bottom > visibleBottom) sheet.scrollTop += markerBounds.bottom - visibleBottom;
+      }
+    }
   }
 
   function resizeInput() {
     input.style.height = "auto";
     input.style.height = `${input.scrollHeight}px`;
+    requestAnimationFrame(keepTypingVisible);
   }
 
   function updateTime() {
@@ -128,7 +163,11 @@
 
   function focusInput() {
     requestAnimationFrame(() => {
-      if (!practice.hidden && attempt.phase === "active") input.focus();
+      if (!practice.hidden && attempt.phase === "active") {
+        if (window.matchMedia("(max-width: 780px)").matches) input.focus({ preventScroll: true });
+        else input.focus();
+        requestAnimationFrame(keepTypingVisible);
+      }
     });
   }
 

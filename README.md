@@ -6,6 +6,8 @@ The presentation uses plain paper and a desk surface, without fictional firm bra
 
 Mobile uses explicit nonnegative paint layers: fragments below paper, native textarea and controls above paper, and results above the stack. The active textarea explicitly sets opaque ink and WebKit text fill; typed text is never mirrored into a separate display layer.
 
+On phones, the source paper stays in view in a scrollable paper region sized from the visual viewport, including keyboard resize events. Its highlighted source position remains in view while editing. The native typing area can scroll internally when the keyboard leaves limited space; the page remains normally scrollable.
+
 ## How it works
 
 - Selects randomly from 67 locally stored passages.
