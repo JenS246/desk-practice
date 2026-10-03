@@ -4,6 +4,8 @@ Desk Practice is a quiet, document-first typing game for paralegal students in a
 
 The presentation uses plain paper and a desk surface, without fictional firm branding. Desktop shows a full manila folder, a partial ruled legal pad, an ordinary pen, and a paperclip on the opening sheet. Phones retain small folder and legal-pad fragments behind the papers, plus the opening-sheet paperclip. These CSS-only decorations are noninteractive and hidden from assistive technology. Practice choices remain native radio buttons and in-game controls remain simple text actions.
 
+Mobile uses explicit nonnegative paint layers: fragments below paper, native textarea and controls above paper, and results above the stack. The active textarea explicitly sets opaque ink and WebKit text fill; typed text is never mirrored into a separate display layer.
+
 ## How it works
 
 - Selects randomly from 67 locally stored passages.

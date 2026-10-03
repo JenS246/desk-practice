@@ -37,6 +37,8 @@ const requirements = [
   [!css.includes("caret-color: transparent"), "The native textarea caret must not be hidden."],
   [!/.typing-field textarea\s*\{[^}]*opacity:\s*0\b/s.test(css), "The native textarea must not be invisible."],
   [css.includes("min-height: 44px"), "Mobile controls need adequate touch targets."],
+  [css.includes('.desk-fragment { display: block; position: absolute; z-index: 0; pointer-events: none; }'), "Mobile fragments must paint behind the paper without negative stacking."],
+  [/\.typing-field textarea\s*\{[^}]*z-index:\s*2;[^}]*-webkit-text-fill-color:\s*var\(--ink\);[^}]*opacity:\s*1;/s.test(css), "Mobile native textarea must have explicit visible text and stacking."],
   [css.includes("max-height: 46dvh"), "Keyboard-height source access is missing."],
   [css.includes(".practice-folder { display: none; }"), "The active mobile folder should be removed."],
   [app.includes("localStorage"), "Passage deck persistence is missing."],

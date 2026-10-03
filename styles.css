@@ -295,9 +295,12 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
 @media (max-width: 780px) {
   .desk { padding: 28px 8px 32px; overflow: visible; }
   .home-screen > .folder { display: none; }
-  .home-paper { display: block; position: relative; isolation: isolate; width: calc(100vw - 42px); }
+  .home-paper { display: block; position: relative; z-index: 1; width: calc(100vw - 42px); }
   .cover-sheet { width: 100%; padding: 30px 28px; transform: none; }
-  .desk-fragment { display: block; position: absolute; z-index: -1; }
+  /* Mobile paint order: fragments 0, paper 1, native input/controls 2, results 3. */
+  .desk-fragment { display: block; position: absolute; z-index: 0; pointer-events: none; }
+  .paper { position: relative; z-index: 1; }
+  .cover-copy { position: relative; z-index: 2; }
   .folder-fragment {
     top: -5px;
     left: -5px;
@@ -358,15 +361,26 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
   }
   .practice-screen { width: 100%; min-height: 0; display: block; }
   .practice-folder { display: none; }
-  .paper-stack { width: 100%; max-height: none; overflow: visible; padding: 0; isolation: isolate; }
-  .source-sheet, .typing-sheet { width: 100%; padding: 22px 20px; transform: none; }
+  .paper-stack { position: relative; z-index: 1; width: 100%; max-height: none; overflow: visible; padding: 0; }
+  .source-sheet, .typing-sheet { position: relative; z-index: 1; width: 100%; padding: 22px 20px; transform: none; }
   .source-sheet { min-height: 0; }
   .typing-sheet { min-height: 224px; margin-top: -1px; }
   .document-heading { display: block; }
   .document-heading h1 { margin-top: 0; }
   .source-text, .typing-field textarea { font-size: 1.0625rem; line-height: 1.55; }
   .source-text { margin-top: 18px; }
-  .typing-field textarea { min-height: 96px; margin-top: 16px; }
+  .typing-field textarea {
+    position: relative;
+    z-index: 2;
+    min-height: 96px;
+    margin-top: 16px;
+    color: var(--ink);
+    -webkit-text-fill-color: var(--ink);
+    opacity: 1;
+    background: transparent;
+    caret-color: var(--navy);
+  }
+  .attempt-controls, .pause-notice, .document-confirm { position: relative; z-index: 2; }
   .attempt-controls { display: block; margin-top: 12px; padding-top: 10px; }
   .attempt-controls p { min-height: 32px; display: flex; align-items: center; }
   .attempt-controls div { display: flex; justify-content: space-between; gap: 4px 14px; }
@@ -379,6 +393,7 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
   .practice-screen.is-complete .paper-stack { transform: none; }
   .result-slip {
     position: relative;
+    z-index: 3;
     inset: auto;
     width: min(100%, 360px);
     margin: 12px auto 24px;
