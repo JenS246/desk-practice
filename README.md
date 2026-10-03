@@ -14,6 +14,7 @@ Desk Practice is a quiet, document-first typing game for paralegal students in a
 - Starts timed countdowns with the first typed character. Timed practice ends at zero or when the source is completed early.
 - Scores timed expiry against the aligned attempted portion only; unread source text never counts as an error. Timed WPM uses actual typed output over active time.
 - Preserves the selected duration through Restart, New document, Try again, and Next document.
+- Home returns to the mode selector, preserving the selected duration. Unfinished attempts with typing require an inline confirmation; empty and completed attempts return immediately. Returning Home cancels both countdown and timer callbacks.
 - Completes when aligned typing reaches the end of the source, without requiring mistakes to be corrected.
 - Keeps the completed attempt and results visible until Next document or Try again is deliberately clicked or tapped.
 - Calculates five-character words per minute, alignment-based final accuracy, and unresolved insertions, deletions, and substitutions.

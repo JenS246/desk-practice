@@ -270,6 +270,9 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
 .result-actions button { width: 100%; }
 .result-actions .plain-button { background: transparent; color: var(--navy); box-shadow: none; }
 .result-actions .plain-button:hover { background: rgba(38, 62, 84, 0.08); }
+.result-actions .home-action { justify-self: center; width: auto; min-height: 44px; padding: 8px 3px; border: 0; border-bottom: 1px solid currentColor; border-radius: 0; background: transparent; color: var(--navy); font-weight: 500; box-shadow: none; }
+.result-actions .home-action:hover { background: transparent; color: var(--ink); }
+.result-actions .home-action:active { box-shadow: none; }
 
 @media (max-width: 1120px) {
   .pen { right: 2.5vw; }

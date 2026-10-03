@@ -24,6 +24,46 @@
   let current = null;
   let selectedDuration = 0;
   let deadline = null;
+  let ticker = null;
+  let confirmationAction = "new";
+
+  function returnHome() {
+    attempt.stopClock();
+    clearTimeout(deadline);
+    clearInterval(ticker);
+    deadline = null;
+    ticker = null;
+    attempt.begin({ id: "", text: "" }, selectedDuration);
+    attempt.phase = "idle";
+    current = null;
+    input.value = "";
+    input.disabled = true;
+    sourceText.replaceChildren();
+    results.hidden = true;
+    resultSource.replaceChildren();
+    resultSource.hidden = true;
+    confirmNotice.hidden = true;
+    pauseNotice.hidden = true;
+    practice.classList.remove("is-complete");
+    practice.hidden = true;
+    home.hidden = false;
+    document.querySelector(`input[name="practice-duration"][value="${selectedDuration}"]`).checked = true;
+    paperStack.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.querySelector("[data-start]").focus({ preventScroll: true });
+  }
+
+  function requestConfirmation(action) {
+    confirmationAction = action;
+    document.querySelector("[data-confirm-message]").textContent = action === "home"
+      ? "Return home? Your current attempt will be cleared."
+      : "Start a different document? Your current attempt will be cleared.";
+    document.querySelector("[data-confirm-new]").textContent = action === "home" ? "Home" : "New document";
+    attempt.requestConfirmation();
+    status.textContent = action === "home" ? "Confirm returning home." : "Confirm a different document.";
+    syncPhase();
+    document.querySelector("[data-cancel-new]").focus();
+  }
 
   function scheduleDeadline() {
     clearTimeout(deadline);
@@ -62,6 +102,7 @@
   }
 
   function renderSourceProgress(value) {
+    if (!current) return;
     const operations = alignText(current.text, value, attempt.phase === "complete");
     const cursorPosition = input.selectionStart ?? value.length;
     const currentSourcePosition = sourcePositionForTypedPosition(operations, cursorPosition);
@@ -86,7 +127,9 @@
   }
 
   function focusInput() {
-    requestAnimationFrame(() => input.focus());
+    requestAnimationFrame(() => {
+      if (!practice.hidden && attempt.phase === "active") input.focus();
+    });
   }
 
   function syncPhase() {
@@ -108,6 +151,11 @@
   function begin(passage) {
     current = passage;
     attempt.begin(passage, selectedDuration);
+    clearInterval(ticker);
+    ticker = setInterval(() => {
+      if (attempt.checkExpiry()) { finish(); return; }
+      if (attempt.phase === "active" && attempt.timerStarted) updateTime();
+    }, 250);
     input.value = "";
     documentType.textContent = current.type;
     sourceLine.hidden = true;
@@ -129,6 +177,8 @@
 
   function finish() {
     clearTimeout(deadline);
+    clearInterval(ticker);
+    ticker = null;
     document.querySelector("#results-title").textContent = attempt.durationMs ? "Practice complete" : "Completed";
     const metrics = attempt.metrics();
     document.querySelector("[data-wpm]").textContent = String(metrics.wpm);
@@ -159,7 +209,9 @@
     syncPhase();
     if (window.matchMedia("(max-width: 780px)").matches) {
       const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-      requestAnimationFrame(() => results.scrollIntoView({ behavior, block: "nearest" }));
+      requestAnimationFrame(() => {
+        if (!results.hidden) results.scrollIntoView({ behavior, block: "nearest" });
+      });
     }
   }
 
@@ -223,10 +275,7 @@
       begin(drawPassage(current.id));
       return;
     }
-    attempt.requestConfirmation();
-    status.textContent = "Confirm a different document.";
-    syncPhase();
-    document.querySelector("[data-cancel-new]").focus();
+    requestConfirmation("new");
   });
 
   document.querySelector("[data-cancel-new]").addEventListener("click", () => {
@@ -237,12 +286,16 @@
     else document.querySelector("[data-resume]").focus();
   });
 
-  document.querySelector("[data-confirm-new]").addEventListener("click", () => begin(drawPassage(current.id)));
+  document.querySelector("[data-confirm-new]").addEventListener("click", () => {
+    if (confirmationAction === "home") returnHome();
+    else begin(drawPassage(current.id));
+  });
   document.querySelector("[data-next]").addEventListener("click", () => begin(drawPassage(current.id)));
   document.querySelector("[data-retry]").addEventListener("click", () => begin(current));
 
-  setInterval(() => {
-    if (attempt.checkExpiry()) { finish(); return; }
-    if (attempt.phase === "active" && attempt.timerStarted) updateTime();
-  }, 250);
+  document.querySelectorAll("[data-home]").forEach((button) => button.addEventListener("click", () => {
+    if (attempt.checkExpiry()) finish();
+    if (attempt.phase === "complete" || (!attempt.timerStarted && !attempt.value.length)) returnHome();
+    else requestConfirmation("home");
+  }));
 })();
