@@ -8,6 +8,8 @@ Mobile uses explicit nonnegative paint layers: fragments below paper, native tex
 
 On phones, the source paper stays in view in a scrollable paper region sized from the visual viewport, including keyboard resize events. Its highlighted source position remains in view while editing. The native typing area can scroll internally when the keyboard leaves limited space; the page remains normally scrollable.
 
+Source scrolling hands off to the page at its edges, so the paper does not trap gestures needed to reach controls. Desktop keeps the same desk composition with a restrained, thin office pen. Real-device onscreen-keyboard testing is still required; responsive browser checks do not substitute for it.
+
 ## How it works
 
 - Selects randomly from 67 locally stored passages.

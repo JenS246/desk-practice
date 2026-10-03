@@ -264,16 +264,16 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
   .desktop-pen {
     left: calc(50% + 430px);
     top: 19%;
-    width: 11px;
-    height: 220px;
+    width: 9px;
+    height: 212px;
     background: var(--navy);
     border: 1px solid var(--navy-dark);
     border-radius: 2px 2px 0 0;
     transform: rotate(12deg);
-    box-shadow: 2px 2px 3px rgba(58, 48, 37, 0.12);
+    box-shadow: 1px 1px 2px rgba(58, 48, 37, 0.09);
   }
   .desktop-pen::before { content: ""; position: absolute; top: 17px; right: -3px; width: 3px; height: 60px; border: 1px solid #777c7b; border-left: 0; }
-  .desktop-pen::after { content: ""; position: absolute; bottom: -14px; left: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 14px solid #8c8778; }
+  .desktop-pen::after { content: ""; position: absolute; bottom: -12px; left: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 12px solid #8c8778; }
   .home-paper > .clip-fragment { display: block; position: absolute; z-index: 2; top: -9px; left: 31px; width: 13px; height: 35px; border: 2px solid #777c7b; border-radius: 7px; transform: rotate(-7deg); }
   .home-paper > .clip-fragment::before { content: ""; position: absolute; inset: 4px 2px 3px; border: 1px solid #8c9291; border-top: 0; border-radius: 0 0 4px 4px; }
 }
@@ -371,7 +371,7 @@ button:focus-visible, .typing-sheet:focus-within { outline: 3px solid var(--focu
     min-height: 0;
     max-height: min(240px, calc(var(--practice-view-height, 100dvh) * 0.38));
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior: auto;
   }
   .typing-sheet { min-height: 224px; margin-top: -1px; }
   .document-heading { display: block; position: sticky; top: -21px; z-index: 1; padding-top: 21px; background: var(--paper); margin-top: -21px; }

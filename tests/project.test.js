@@ -40,6 +40,7 @@ const requirements = [
   [css.includes('.desk-fragment { display: block; position: absolute; z-index: 0; pointer-events: none; }'), "Mobile fragments must paint behind the paper without negative stacking."],
   [/\.typing-field textarea\s*\{[^}]*z-index:\s*2;[^}]*-webkit-text-fill-color:\s*var\(--ink\);[^}]*opacity:\s*1;/s.test(css), "Mobile native textarea must have explicit visible text and stacking."],
   [css.includes("var(--practice-view-height, 100dvh) * 0.38"), "Source height must follow the visible keyboard viewport."],
+  [!css.includes("overscroll-behavior: contain"), "Source scrolling must hand off to normal page scrolling at its edges."],
   [app.includes('window.visualViewport?.addEventListener("resize", updateVisibleViewport)'), "Keyboard viewport resize handling is missing."],
   [css.includes(".practice-folder { display: none; }"), "The active mobile folder should be removed."],
   [app.includes("localStorage"), "Passage deck persistence is missing."],
