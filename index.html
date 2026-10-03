@@ -7,25 +7,21 @@
     <meta name="theme-color" content="#d8d0c2" />
     <title>Desk Practice | Legal Internship Typing Practice</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=home-1" />
+    <link rel="stylesheet" href="styles.css?v=classroom-1" />
   </head>
   <body>
     <main class="desk">
       <div class="desk-grain" aria-hidden="true"></div>
-      <div class="legal-pad" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <div class="pen" aria-hidden="true"></div>
-      <div class="paperclip" aria-hidden="true"></div>
 
       <section class="home-screen" data-screen="home">
         <div class="folder" aria-hidden="true"></div>
         <article class="paper cover-sheet">
-          <p class="office-mark">HARTWELL &amp; PIKE</p>
           <div class="cover-copy">
             <h1>Desk Practice</h1>
             <p class="course-name">Legal Internship Typing Practice</p>
             <p class="instruction">Type the document exactly as it appears.</p>
             <fieldset class="practice-options">
-              <legend>Practice</legend>
+              <legend class="sr-status">Practice</legend>
               <label><input type="radio" name="practice-duration" value="0" checked /> Full document</label>
               <label><input type="radio" name="practice-duration" value="30000" /> 30 seconds</label>
               <label><input type="radio" name="practice-duration" value="60000" /> 60 seconds</label>
@@ -33,7 +29,6 @@
             </fieldset>
             <button class="start-button" type="button" data-start>Start</button>
           </div>
-          <p class="paper-footer">TRAINING COPY</p>
         </article>
       </section>
 
@@ -42,7 +37,6 @@
         <div class="paper-stack">
           <article class="paper source-sheet" aria-labelledby="document-type">
             <header class="document-heading">
-              <p class="office-mark">HARTWELL &amp; PIKE</p>
               <h1 id="document-type" data-document-type></h1>
             </header>
             <p class="source-text" data-source-text aria-label="Text to type"></p>

@@ -6,6 +6,8 @@ const app = fs.readFileSync("app.js", "utf8");
 const engine = fs.readFileSync("typing-engine.js", "utf8");
 
 const requirements = [
+  [!html.includes("HARTWELL") && !html.includes("TRAINING COPY"), "Decorative branding must not return."],
+  [!html.includes('class="pen"') && !html.includes('class="legal-pad"') && !html.includes('class="paperclip"'), "Extra desk props must remain removed."],
   [html.includes('data-start'), "Start control is missing."],
   [html.includes('data-next'), "Next document control is missing."],
   [html.includes('data-retry'), "Try again control is missing."],
